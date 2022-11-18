@@ -195,6 +195,11 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        /*
+         * Telegram Service Provider
+         */
+        App\Providers\TelegramServiceProvider::class,
+
     ],
 
     /*
