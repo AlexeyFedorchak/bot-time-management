@@ -13,15 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tasks', function (Blueprint $table) {
+        Schema::create('task_updates', function (Blueprint $table) {
             $table->id();
-            $table->string('category')->nullable();
-            $table->string('description');
-            $table->string('creator_id');
-            $table->string('message_id')->nullable();
-            $table->boolean('is_tracking')->default(true);
-            $table->longText('photo')->nullable();
+            $table->string('status')->default(\App\Models\TaskUpdate::STATUS_OPEN);
+            $table->string('executor_id');
+            $table->unsignedBigInteger('task_id');
             $table->timestamps();
+
+            $table->foreign('task_id')
+                ->references('id')
+                ->on('tasks');
         });
     }
 
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tasks');
+        Schema::dropIfExists('task_updates');
     }
 };

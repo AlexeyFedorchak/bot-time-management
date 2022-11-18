@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
@@ -13,6 +14,9 @@ class Task extends Model
         'category',
         'description',
         'creator_id',
+        'message_id',
+        'is_tracking',
+        'photo',
     ];
 
     const CATEGORY_GIDRAVLIK = 'Гідравліка';
@@ -46,4 +50,22 @@ class Task extends Model
 
         return null;
     }
+
+    /**
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        $lastUpdate = $this->updates->last();
+        return $lastUpdate->status;
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function updates(): HasMany
+    {
+        return $this->hasMany(TaskUpdate::class, 'task_id', 'id');
+    }
+
 }
