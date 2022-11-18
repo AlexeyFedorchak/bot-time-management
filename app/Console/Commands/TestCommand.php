@@ -19,7 +19,7 @@ class TestCommand extends Command
     protected $signature = 'dd';
 
     /**
-     * @TODO fix chats ids, refactor, fix offset
+     * @TODO refactor, fix offset
      * Execute the console command.
      *
      * @return int

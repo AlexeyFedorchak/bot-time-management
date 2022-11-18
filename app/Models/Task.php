@@ -29,6 +29,8 @@ class Task extends Model
     }
 
     /**
+     * @TODO remove hard code
+     *
      * @return string|null
      */
     public function getChatIdByCategory(): ?string
