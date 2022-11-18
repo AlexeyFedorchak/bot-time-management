@@ -34,11 +34,11 @@ class TrackMessages extends Command
         $updates = app('Telegram')->getUpdates($offset, true);
 
         foreach ($updates['result'] as $update) {
-            if (!isset($update['channel_post'])) {
+            if (!isset($update['message'])) {
                 continue;
             }
 
-            $message = $update['channel_post'];
+            $message = $update['message'];
 
             if (!isset($message['reply_to_message'])) {
                 continue;
@@ -60,7 +60,7 @@ class TrackMessages extends Command
                 TaskUpdate::create([
                     'task_id' => $task->id,
                     'status' => TaskUpdate::STATUS_IN_PROGRESS,
-                    'executor_id' => '',
+                    'executor_id' => $message['from']['first_name'],
                 ]);
             } else if ($message['text'] === TaskUpdate::REPLY_DONE) {
                 $task = Task::where('message_id', $repliedTo['message_id'])
@@ -72,7 +72,7 @@ class TrackMessages extends Command
                 TaskUpdate::create([
                     'task_id' => $task->id,
                     'status' => TaskUpdate::STATUS_DONE,
-                    'executor_id' => '',
+                    'executor_id' => $message['from']['first_name'],
                 ]);
             } else if ($message['text'] === TaskUpdate::REPLY_CANCELLED) {
                 $task = Task::where('message_id', $repliedTo['message_id'])
@@ -84,7 +84,7 @@ class TrackMessages extends Command
                 TaskUpdate::create([
                     'task_id' => $task->id,
                     'status' => TaskUpdate::STATUS_CANCELLED,
-                    'executor_id' => '',
+                    'executor_id' => $message['from']['first_name'],
                 ]);
             }
         }

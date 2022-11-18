@@ -34,6 +34,10 @@ class Communicate extends Command
         $newOffset = $updates['result'][count($updates['result']) - 1]['update_id'];
         $newOffset -= 50;
 
+        if ($newOffset <= 0) {
+            $newOffset = 1;
+        }
+
         LastOffset::first()->update([
             'offset' => $newOffset
         ]);
@@ -48,6 +52,9 @@ class Communicate extends Command
                 continue;
 
             $chat = $message['chat'];
+
+            if (!isset($message['text']) && !isset($message['caption']))
+                continue;
 
             $messageResponded = RespondedMessage::where('chat_id', $chat['id'])
                 ->where('message_id', $message['message_id'])
@@ -198,12 +205,12 @@ class Communicate extends Command
             'category' => $lastMessage['text'],
             'description' => $lastPreMessage['text'],
             'photo' => json_encode($lastPreMessage['photo'] ?? ''),
-            'creator_id' => $chat['id'],
+            'creator_id' => $chat['first_name'],
             'message_id' => null,
         ]);
 
         TaskUpdate::create([
-            'executor_id' => $chat['id'],
+            'executor_id' => $chat['first_name'],
             'task_id' => $task->id,
         ]);
 

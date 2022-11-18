@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -41,11 +42,11 @@ class Task extends Model
     {
         switch ($this->category) {
             case self::CATEGORY_GIDRAVLIK:
-                return '-1001486227212';
+                return '-676109028';
             case self::CATEGORY_MECHANIC:
-                return '-1001821311967';
+                return '-875087632';
             case self::CATEGORY_ELECTRICITY:
-                return '-1001867607313';
+                return '-882515336';
         }
 
         return null;
@@ -68,4 +69,39 @@ class Task extends Model
         return $this->hasMany(TaskUpdate::class, 'task_id', 'id');
     }
 
+    /**
+     * in seconds
+     *
+     * @return int|null|string
+     */
+    public function getDuration()
+    {
+        $inProgress = TaskUpdate::where('task_id', $this->id)
+            ->where('status', TaskUpdate::STATUS_IN_PROGRESS)
+            ->first();
+
+        $done = TaskUpdate::where('task_id', $this->id)
+            ->where('status', TaskUpdate::STATUS_DONE)
+            ->first();
+
+        $cancelled = TaskUpdate::where('task_id', $this->id)
+            ->where('status', TaskUpdate::STATUS_CANCELLED)
+            ->first();
+
+        if ($inProgress) {
+            if ($done) {
+                return Carbon::parse($inProgress->created_at)->diffInSeconds($done->created_at);
+            } else if ($cancelled) {
+                return Carbon::parse($inProgress->created_at)->diffInSeconds($cancelled->created_at);
+            } else {
+                return 'Завдання в процесі виконання';
+            }
+        } else if ($done) {
+            return Carbon::parse($this->created_at)->diffInSeconds($done->created_at);
+        } else if ($cancelled) {
+            return Carbon::parse($this->created_at)->diffInSeconds($cancelled->created_at);
+        }
+
+        return 'Завдання не взяте до виконання';
+    }
 }
