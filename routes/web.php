@@ -27,6 +27,10 @@ Route::post('/login', function () {
         ->where('password', request()->password)
         ->first();
 
+    if (!$user) {
+        return view('login');
+    }
+
     auth()->login($user);
 
     return redirect()->to(route('tasks'));

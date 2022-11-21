@@ -31,16 +31,18 @@ class Communicate extends Command
         $offset = LastOffset::first()->offset;
         $updates = app('Telegram')->getUpdates($offset, true);
 
-        $newOffset = $updates['result'][count($updates['result']) - 1]['update_id'];
-        $newOffset -= 50;
+        if (count($updates['result'])  > 0) {
+            $newOffset = $updates['result'][count($updates['result']) - 1]['update_id'];
+            $newOffset -= 50;
 
-        if ($newOffset <= 0) {
-            $newOffset = 1;
+            if ($newOffset <= 0) {
+                $newOffset = 1;
+            }
+
+            LastOffset::first()->update([
+                'offset' => $newOffset
+            ]);
         }
-
-        LastOffset::first()->update([
-            'offset' => $newOffset
-        ]);
 
         foreach ($updates['result'] as $update) {
             if (!isset($update['message'])) {
