@@ -39,6 +39,7 @@ Route::post('/login', function () {
 Route::get('/tasks', function () {
     $category = request()->category;
     $chatId = request()->worker;
+    $status = request()->status;
 
     if (!empty($chatId)) {
         $taskIds = \App\Models\TaskUpdate::where('executor_id', $chatId)
@@ -54,7 +55,7 @@ Route::get('/tasks', function () {
             }
         })
             ->whereIn('id', $taskIds)
-            ->with('author')
+            ->with(['author', 'updates'])
             ->orderBy('updated_at', 'DESC')
             ->get();
 
@@ -66,9 +67,21 @@ Route::get('/tasks', function () {
                     $query->where('category', $category);
                 }
             })
-            ->with('author')
+            ->with(['author', 'updates'])
             ->orderBy('updated_at', 'DESC')
             ->get();
+    }
+
+    if ($status) {
+        $newTaskList = [];
+
+        foreach ($tasks as $task) {
+            if ($task->updates->last()->status === $status) {
+                $newTaskList[] = $task;
+            }
+        }
+
+        $tasks = $newTaskList;
     }
 
     return view('tasks')->with(['tasks' => $tasks]);

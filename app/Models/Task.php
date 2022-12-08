@@ -155,10 +155,4 @@ class Task extends Model
         $task->message_id = $message->toArray()['message_id'];
         $task->save();
     }
-
-    public function getPhotoLink()
-    {
-        $response = app('Telegram')->getFile($this);
-
-    }
 }

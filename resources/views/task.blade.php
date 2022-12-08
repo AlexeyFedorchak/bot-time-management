@@ -1,14 +1,16 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-<br>
-<div style="margin-left: 0px; display: flex">
+<div class="alert alert-primary" role="alert" style="margin-left: 0px; display: flex">
+    <div style="margin-left: 50px"><a href="{{ route('tasks') }}">Перейти до всіх завдань</a></div>
     <div style="margin-left: 50px"><a href="/logout">Вийти з системи</a></div>
 </div>
-<br>
 
-<h2 style="margin-left: 50px">{{ \App\Helpers\Strings::limit($task->description, 42) }}</h2>
-<div style="margin-left: 50px">Тривалість виконаня (секунд): <b>{{ \App\Helpers\Time::formatTimeInSeconds($task->getDuration() ?: 'Завдання проігноровано.') }}</b></div>
-<br>
+<h2 class="alert alert-secondary" >
+    <div style="margin-left: 50px">{{ \App\Helpers\Strings::limit($task->description, 42) }}</div>
+</h2>
+<div class="alert alert-info" >
+    <div style="margin-left: 50px">Тривалість виконаня (секунд): <b>{{ \App\Helpers\Time::formatTimeInSeconds($task->getDuration() ?: 'Завдання проігноровано.') }}</b></div>
+</div>
 
 @if(!empty($task->photo) && $task->photo !== '""')
     <div style="margin-left: 50px">
