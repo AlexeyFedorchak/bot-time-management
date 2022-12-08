@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (auth()->check()) {
-        return view('tasks');
+        return redirect()->to(route('tasks'));
     } else {
         return view('login');
     }
@@ -37,12 +37,46 @@ Route::post('/login', function () {
 })->name('login');
 
 Route::get('/tasks', function () {
-    return view('tasks');
+    $category = request()->category;
+    $chatId = request()->worker;
+
+    if (!empty($chatId)) {
+        $taskIds = \App\Models\TaskUpdate::where('executor_id', $chatId)
+            ->get('task_id')
+            ->pluck('task_id')
+            ->toArray();
+
+        $tasks = \App\Models\Task::where(function ($query) use ($category) {
+            $categoryValid = in_array($category, \App\Models\Task::categories());
+
+            if (!empty($category) && $categoryValid) {
+                $query->where('category', $category);
+            }
+        })
+            ->whereIn('id', $taskIds)
+            ->with('author')
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+    } else {
+        $tasks = \App\Models\Task::where(function ($query) use ($category) {
+                $categoryValid = in_array($category, \App\Models\Task::categories());
+
+                if (!empty($category) && $categoryValid) {
+                    $query->where('category', $category);
+                }
+            })
+            ->with('author')
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+    }
+
+    return view('tasks')->with(['tasks' => $tasks]);
 })->name('tasks');
 
 Route::get('/tasks/{task}', function (\App\Models\Task $task) {
     return view ('task')->with([
-        'task' => $task
+        'task' => $task->load(['updates' => function ($query){ $query->with('executor'); }]),
     ]);
 })->name('tasks.show');
 
@@ -51,3 +85,7 @@ Route::get('/logout', function () {
 
     return redirect()->to('/');
 })->name('logout');
+
+Route::get('/workers', function () {
+    return view('workers');
+})->name('workers');

@@ -2,6 +2,7 @@
 
 namespace App\Clients;
 
+use App\Models\Task;
 use GuzzleHttp\Client;
 use Telegram\Bot\Api;
 use Telegram\Bot\Exceptions\TelegramSDKException;
@@ -11,12 +12,15 @@ class TelegramClient
 {
     protected Api $telegramSDK;
 
+    protected string $apiKey;
+
     /**
      * @throws TelegramSDKException
      */
     public function __construct()
     {
-        $this->telegramSDK = new Api(config('telegram.api-key'));
+        $this->apiKey = config('telegram.api-key');
+        $this->telegramSDK = new Api($this->apiKey);
     }
 
     public function __call(string $name, array $arguments)
@@ -40,7 +44,7 @@ class TelegramClient
     public function getUpdates($offset): array
     {
         $client = new Client();
-        $token = config('telegram.api-key');
+        $token = $this->apiKey;
 
         $res = $client
             ->get("https://api.telegram.org/bot{$token}/getUpdates?offset={$offset}")
@@ -49,4 +53,26 @@ class TelegramClient
 
         return json_decode($res, true);
     }
+
+    /**
+     * @param Task $task
+     * @return string
+     * @throws GuzzleException
+     */
+    public function getFileUrl(Task $task): string
+    {
+        $client = new Client();
+        $token = $this->apiKey;
+
+        $photos = json_decode($task->photo);
+        $response = $client
+            ->get("https://api.telegram.org/bot$token/getFile?file_id={$photos[2]->file_id}")
+            ->getBody()
+            ->getContents();
+
+        $response = json_decode($response);
+
+        return "https://api.telegram.org/file/bot$token/{$response->result->file_path}";
+    }
+
 }

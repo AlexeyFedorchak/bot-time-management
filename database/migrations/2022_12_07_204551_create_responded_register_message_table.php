@@ -13,18 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('last_offset', function (Blueprint $table) {
+        Schema::create('responded_register_message', function (Blueprint $table) {
             $table->id();
-            $table->string('offset')->default(1);
-            $table->string('register_offset')->default(1);
+            $table->string('message_id');
+            $table->string('chat_id');
             $table->timestamps();
         });
-
-        // add record
-        \App\Models\LastOffset::create([
-            'offset' => 1,
-            'register_offset' => 1,
-        ]);
     }
 
     /**
@@ -34,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('last_offset');
+        Schema::dropIfExists('responded_register_message');
     }
 };

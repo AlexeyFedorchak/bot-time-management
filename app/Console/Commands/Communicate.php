@@ -161,7 +161,12 @@ class Communicate extends Command
     private function sendKeyboard(array $chat, array $message): void
     {
         $keyboard = [
-            [Task::CATEGORY_GIDRAVLIK], [Task::CATEGORY_MECHANIC], [Task::CATEGORY_ELECTRICITY],
+            [Task::CATEGORY_ELECTRIC],
+            [Task::CATEGORY_MECHANIC],
+            [Task::CATEGORY_SANTEHNIK],
+            [Task::CATEGORY_CLIMATE],
+            [Task::CATEGORY_VENTILATSIYA],
+            [Task::CATEGORY_GAS],
         ];
 
         $replyMarkup = Keyboard::make([
@@ -207,12 +212,12 @@ class Communicate extends Command
             'category' => $lastMessage['text'],
             'description' => $lastPreMessage['text'],
             'photo' => json_encode($lastPreMessage['photo'] ?? ''),
-            'creator_id' => $chat['first_name'],
+            'creator_id' => $chat['id'],
             'message_id' => null,
         ]);
 
         TaskUpdate::create([
-            'executor_id' => $chat['first_name'],
+            'executor_id' => $chat['id'],
             'task_id' => $task->id,
         ]);
 

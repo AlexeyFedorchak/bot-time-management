@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\Telegram;
 use App\Models\LastOffset;
 use App\Models\Task;
 use App\Models\TaskUpdate;
@@ -50,19 +51,7 @@ class TrackMessages extends Command
                 continue;
             }
 
-            if ($message['text'] === TaskUpdate::REPLY_IN_PROGRESS) {
-                $task = Task::where('message_id', $repliedTo['message_id'])
-                    ->first();
-
-                if ($task->getStatus() === TaskUpdate::STATUS_IN_PROGRESS)
-                    continue;
-
-                TaskUpdate::create([
-                    'task_id' => $task->id,
-                    'status' => TaskUpdate::STATUS_IN_PROGRESS,
-                    'executor_id' => $message['from']['first_name'],
-                ]);
-            } else if ($message['text'] === TaskUpdate::REPLY_DONE) {
+            if (str_starts_with(trim($message['text']), TaskUpdate::REPLY_DONE)) {
                 $task = Task::where('message_id', $repliedTo['message_id'])
                     ->first();
 
@@ -72,9 +61,22 @@ class TrackMessages extends Command
                 TaskUpdate::create([
                     'task_id' => $task->id,
                     'status' => TaskUpdate::STATUS_DONE,
-                    'executor_id' => $message['from']['first_name'],
+                    'executor_id' => $message['from']['id'],
+                    'reason' => $this->formatReason($message['text']),
                 ]);
-            } else if ($message['text'] === TaskUpdate::REPLY_CANCELLED) {
+            } else if (str_starts_with(trim($message['text']), TaskUpdate::REPLY_IN_PROGRESS)) {
+                $task = Task::where('message_id', $repliedTo['message_id'])
+                    ->first();
+
+                if ($task->getStatus() === TaskUpdate::STATUS_IN_PROGRESS)
+                    continue;
+
+                TaskUpdate::create([
+                    'task_id' => $task->id,
+                    'status' => TaskUpdate::STATUS_IN_PROGRESS,
+                    'executor_id' => $message['from']['id'],
+                ]);
+            } else if (str_starts_with(trim($message['text']), TaskUpdate::REPLY_CANCELLED)) {
                 $task = Task::where('message_id', $repliedTo['message_id'])
                     ->first();
 
@@ -84,9 +86,39 @@ class TrackMessages extends Command
                 TaskUpdate::create([
                     'task_id' => $task->id,
                     'status' => TaskUpdate::STATUS_CANCELLED,
-                    'executor_id' => $message['from']['first_name'],
+                    'executor_id' => $message['from']['id'],
+                    'reason' => $this->formatReason($message['text']),
                 ]);
+            } else if (str_starts_with(trim($message['text']), TaskUpdate::REPLY_CHANGE_CATEGORY)) {
+                $category = trim($message['text']);
+                $category = trim($category, '*');
+                $category = trim($category);
+
+                $category = Telegram::recognizeCategory($category);
+
+                if ($category) {
+                    $task = Task::where('message_id', $repliedTo['message_id'])
+                        ->first();
+
+                    if ($task->is_tracking) {
+                        $task->is_tracking = false;
+                        $task->save();
+
+                        $task->cancelAndCreateNew($category, $message);
+                    }
+                }
             }
         }
     }
+
+    /**
+     * @param string $reason
+     * @return string
+     */
+    private function formatReason(string $reason): string
+    {
+        $reason = trim($reason, '+');
+        return trim($reason, '-');
+    }
+
 }

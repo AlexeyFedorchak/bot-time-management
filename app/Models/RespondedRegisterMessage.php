@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LastOffset extends Model
+class RespondedRegisterMessage extends Model
 {
     use HasFactory;
 
-    protected $table = 'last_offset';
+    protected $table = 'responded_register_message';
 
     protected $fillable = [
-        'offset',
-        'register_offset',
+        'message_id',
+        'chat_id',
     ];
 }
